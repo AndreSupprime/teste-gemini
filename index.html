@@ -1,408 +1,488 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Supprime Digital | Growth para Moda & Wellness</title>
-    
-    <!-- Bibliotecas Externas (CDNs) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Alex+Brush&family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+import React, { useState, useEffect } from 'react';
+import { 
+  ChevronDown, 
+  ArrowRight, 
+  Instagram, 
+  Menu, 
+  X, 
+  Star, 
+  ShieldCheck, 
+  Users, 
+  BarChart3, 
+  Search, 
+  Share2, 
+  Zap,
+  Award,
+  Layout,
+  TrendingUp
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-    <style>
-        :root {
-            --brand-dark: #05070a;
-            --brand-blue: #2563eb;
-            --brand-accent: #3b82f6;
-        }
+// --- Estilos Globais para o Logótipo e Fontes ---
+const GoogleFonts = () => (
+  <style dangerouslySetInnerHTML={{ __html: `
+    @import url('https://fonts.googleapis.com/css2?family=Alex+Brush&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+    :root {
+      --brand-dark: #05070a;
+      --brand-blue: #2563eb;
+    }
+    .brand-font { font-family: 'Alex Brush', cursive; }
+    html, body {
+      background-color: var(--brand-dark);
+      color: white;
+      scroll-behavior: smooth;
+    }
+    ::selection {
+      background-color: rgba(37, 99, 235, 0.4);
+      color: white;
+    }
+  `}} />
+);
 
-        body { 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            background-color: var(--brand-dark);
-            color: white;
-            scroll-behavior: smooth;
-        }
+// --- Componentes Base ---
 
-        /* Tipografia do Logo */
-        .brand-font { font-family: 'Alex Brush', cursive; font-weight: 400; }
-
-        /* Estilo Tech Startup: Gradients & Glassmorphism */
-        .glass-nav {
-            background: rgba(5, 7, 10, 0.8);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-        }
-
-        .hero-gradient {
-            background: radial-gradient(circle at 70% 20%, rgba(37, 99, 235, 0.15) 0%, transparent 50%),
-                        radial-gradient(circle at 10% 80%, rgba(59, 130, 246, 0.08) 0%, transparent 40%);
-        }
-
-        .card-tech {
-            background: linear-gradient(145deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
-            border: 1px solid rgba(255,255,255,0.05);
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .card-tech:hover {
-            border-color: rgba(37, 99, 235, 0.4);
-            background: rgba(255, 255, 255, 0.05);
-            transform: translateY(-10px) scale(1.02);
-            box-shadow: 0 20px 40px -20px rgba(0,0,0,0.5);
-        }
-
-        /* Reveal Animations */
-        .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s ease-out; }
-        .reveal.active { opacity: 1; transform: translateY(0); }
-
-        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-20px); } }
-        .animate-float { animation: float 6s ease-in-out infinite; }
-
-        /* FAQ Logic */
-        .faq-content { max-height: 0; overflow: hidden; transition: all 0.3s ease; opacity: 0; }
-        .faq-item.active .faq-content { max-height: 300px; opacity: 1; padding-top: 1rem; }
-        .faq-item.active .chevron-icon { transform: rotate(180deg); }
-
-        .btn-tech {
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-        .btn-tech::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: rgba(255,255,255,0.1);
-            transform: rotate(45deg);
-            transition: 0.5s;
-        }
-        .btn-tech:hover::after { left: 120%; }
-    </style>
-</head>
-<body class="antialiased selection:bg-blue-500/30 selection:text-white overflow-x-hidden">
-
-    <!-- Navegação -->
-    <nav id="navbar" class="fixed top-0 left-0 w-full z-50 transition-all duration-500 py-6 glass-nav">
-        <div class="max-w-7xl mx-auto px-6 flex justify-between items-center">
-            
-            <!-- Logótipo Fiel (Pentágono Ponta Baixo) -->
-            <div class="flex items-center gap-4 group cursor-pointer">
-                <div class="relative flex items-center justify-center bg-[#0d1117] p-2 rounded-xl border border-white/5 group-hover:border-blue-500/30 transition-all">
-                    <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M15 30L35 30L40 22H60L65 30L85 30L75 70L50 92L25 70L15 30Z" fill="white"/>
-                        <path d="M46 55L50 62L54 55H46Z" fill="#0d1117"/>
-                    </svg>
-                </div>
-                <div class="flex flex-col -ml-1">
-                    <span class="text-4xl brand-font text-white -mb-4 tracking-wide">Supprime</span>
-                    <span class="text-[9px] font-bold tracking-[0.55em] uppercase text-blue-500 self-end mr-1">Digital</span>
-                </div>
-            </div>
-
-            <!-- Menu Desktop -->
-            <div class="hidden lg:flex gap-10 items-center text-slate-400 font-semibold text-[10px] tracking-[0.2em] uppercase">
-                <a href="#" class="hover:text-white transition-colors">Início</a>
-                <a href="#metodo" class="hover:text-white transition-colors">Método</a>
-                <a href="#servicos" class="hover:text-white transition-colors">Serviços</a>
-                <a href="#cases" class="hover:text-white transition-colors">Cases</a>
-                <a href="#sobre" class="hover:text-white transition-colors">Sobre Nós</a>
-            </div>
-
-            <div class="flex items-center gap-4">
-                <a href="#" class="hidden md:block bg-blue-600 text-white px-8 py-3 rounded-full font-bold text-xs uppercase tracking-widest btn-tech shadow-xl shadow-blue-500/20 active:scale-95">
-                    Agendar Diagnóstico
-                </a>
-                <button class="lg:hidden text-white" onclick="toggleMenu()">
-                    <i data-lucide="menu"></i>
-                </button>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Overlay Mobile -->
-    <div id="mobile-overlay" class="fixed inset-0 z-[60] bg-[#05070a] hidden flex flex-col p-10 justify-center items-center text-center">
-        <button class="absolute top-10 right-10 text-white" onclick="toggleMenu()"><i data-lucide="x" class="w-10 h-10"></i></button>
-        <div class="flex flex-col gap-8 text-4xl font-black">
-            <a href="#" onclick="toggleMenu()">Início</a>
-            <a href="#servicos" onclick="toggleMenu()">Serviços</a>
-            <a href="#metodo" onclick="toggleMenu()">Método</a>
-            <a href="#" class="bg-blue-600 py-6 px-10 rounded-3xl text-xl mt-4" onclick="toggleMenu()">Agendar Diagnóstico</a>
-        </div>
+// Componente Logótipo Fiel (Pentágono invertido)
+const Logo = ({ size = 42, className = "" }) => (
+  <div className={`flex items-center gap-3 group cursor-pointer ${className}`}>
+    <div className="relative flex items-center justify-center bg-[#0d1117] p-2 rounded-xl border border-white/5 group-hover:border-blue-500/30 transition-all">
+      <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M15 30L35 30L40 22H60L65 30L85 30L75 70L50 92L25 70L15 30Z" fill="white"/>
+        <path d="M46 55L50 62L54 55H46Z" fill="#0d1117"/>
+      </svg>
     </div>
+    <div className="flex flex-col -ml-1">
+      <span className="text-4xl brand-font text-white -mb-4 tracking-wide">Supprime</span>
+      <span className="text-[9px] font-bold tracking-[0.55em] uppercase text-blue-500 self-end mr-1">Digital</span>
+    </div>
+  </div>
+);
 
-    <!-- Hero Section -->
-    <section class="relative pt-44 pb-20 lg:pt-60 lg:pb-40 overflow-hidden hero-gradient">
-        <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
-            <div class="reveal text-center lg:text-left z-10">
-                <div class="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 text-blue-400 px-5 py-2 rounded-full text-[10px] font-black mb-8 uppercase tracking-[0.3em] mx-auto lg:mx-0">
-                    <i data-lucide="award" class="w-4 h-4"></i> +100 Clientes Atendidos
-                </div>
-                <h1 class="text-6xl lg:text-9xl font-black mb-8 leading-[0.85] tracking-tighter">
-                    Marketing <br><span class="text-blue-600 italic">Especializado.</span>
-                </h1>
-                <p class="text-lg lg:text-xl text-slate-400 mb-12 max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium">
-                    A Supprime é uma empresa de marketing que através do método <span class="text-white font-bold">L.A.J</span> ajuda empresas de <span class="text-white font-bold">Moda e Wellness</span> a multiplicarem o seu tamanho.
-                </p>
-                <div class="flex flex-col sm:flex-row gap-5 justify-center lg:justify-start mb-12">
-                    <a href="#" class="bg-blue-600 text-white px-10 py-5 rounded-full font-black text-lg btn-tech flex items-center justify-center gap-3 shadow-2xl shadow-blue-500/30">
-                        Agendar Diagnóstico <i data-lucide="arrow-right"></i>
-                    </a>
-                    <a href="#" class="bg-white/5 border border-white/10 text-white px-10 py-5 rounded-full font-black text-lg hover:bg-white/10 transition-all text-center">
-                        Saber Mais
-                    </a>
-                </div>
-                <div class="flex items-center justify-center lg:justify-start gap-4 text-slate-500 font-bold text-xs uppercase tracking-widest">
-                    <div class="flex -space-x-3">
-                        <img src="https://i.pravatar.cc/100?u=1" class="w-10 h-10 rounded-full border-2 border-[#05070a]">
-                        <img src="https://i.pravatar.cc/100?u=2" class="w-10 h-10 rounded-full border-2 border-[#05070a]">
-                        <img src="https://i.pravatar.cc/100?u=3" class="w-10 h-10 rounded-full border-2 border-[#05070a]">
-                    </div>
-                    <span>+100 Clientes ativos</span>
-                </div>
-            </div>
+// Componente Button (Suporta 'href' para transformar em Link <a> automaticamente)
+const Button = ({ children, variant = 'primary', className = '', href, ...props }) => {
+  const base = "px-8 py-4 rounded-full font-bold transition-all duration-300 active:scale-95 flex items-center justify-center gap-2 relative overflow-hidden group";
+  const variants = {
+    primary: 'bg-blue-600 text-white hover:bg-blue-700 shadow-xl shadow-blue-500/20',
+    secondary: 'bg-white/5 border border-white/10 text-white hover:bg-white/10',
+    outline: 'border-2 border-white/20 text-white hover:border-white/40'
+  };
 
-            <div class="relative reveal delay-200 hidden lg:block animate-float">
-                <div class="absolute -inset-20 bg-blue-600/10 blur-[100px] rounded-full"></div>
-                <div class="relative card-tech p-4 rounded-[4rem] shadow-2xl">
-                    <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=1200" alt="Moda e Wellness Marketing" class="rounded-[3.5rem] opacity-80 border border-white/5">
-                </div>
-            </div>
+  const classes = `${base} ${variants[variant]} ${className}`;
+
+  if (href) {
+    return (
+      <a href={href} target="_blank" rel="noopener noreferrer" className={classes} {...props}>
+        <span className="relative z-10 flex items-center gap-2">{children}</span>
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+      </a>
+    );
+  }
+
+  return (
+    <button className={classes} {...props}>
+      <span className="relative z-10 flex items-center gap-2">{children}</span>
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+    </button>
+  );
+};
+
+const SectionTitle = ({ title, subtitle, align = "center" }) => (
+  <div className={`mb-16 md:mb-24 ${align === "center" ? "text-center" : "text-left"}`}>
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className="inline-flex items-center gap-2 bg-blue-500/10 text-blue-400 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.3em] mb-6"
+    >
+      {subtitle}
+    </motion.div>
+    <motion.h2 
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: 0.1 }}
+      className="text-4xl md:text-7xl font-black text-white tracking-tighter leading-[1.05]"
+    >
+      {title}
+    </motion.h2>
+  </div>
+);
+
+const FAQItem = ({ question, answer }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <div className="border-b border-white/5 py-6">
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex justify-between items-center text-left hover:text-blue-500 transition-colors"
+      >
+        <span className="text-xl font-bold text-white tracking-tight">{question}</span>
+        <ChevronDown className={`w-6 h-6 transition-transform duration-500 ${isOpen ? 'rotate-180 text-blue-500' : 'text-slate-500'}`} />
+      </button>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <p className="py-6 text-slate-400 leading-relaxed text-lg">
+              {answer}
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+// --- Secções da Página ---
+
+const Navbar = () => {
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileMenu, setMobileMenu] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const links = ['Features', 'How It Works', 'Why Choose', 'Testimonials', 'FAQ'];
+
+  return (
+    <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${scrolled ? 'bg-[#05070a]/80 backdrop-blur-xl py-4 border-b border-white/5' : 'bg-transparent py-8'}`}>
+      <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
+        <Logo size={32} />
+
+        <div className="hidden lg:flex gap-10 items-center text-slate-400 font-bold text-[10px] tracking-[0.2em] uppercase">
+          {links.map(link => (
+            <a key={link} href={`#${link.toLowerCase().replace(/\s+/g, '')}`} className="hover:text-white transition-colors">{link}</a>
+          ))}
         </div>
+
+        <div className="flex items-center gap-4">
+          <Button variant="primary" href="https://wa.me/5511965390284" className="hidden md:flex px-6 py-2.5 text-xs uppercase tracking-widest">
+            Agendar Diagnóstico
+          </Button>
+          <button className="lg:hidden text-white" onClick={() => setMobileMenu(true)}>
+            <Menu size={28} />
+          </button>
+        </div>
+      </div>
+
+      <AnimatePresence>
+        {mobileMenu && (
+          <motion.div 
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="fixed inset-0 bg-[#05070a] z-[60] flex flex-col p-10"
+          >
+            <div className="flex justify-between items-center mb-16">
+              <Logo size={32} />
+              <button onClick={() => setMobileMenu(false)}><X size={32} className="text-white" /></button>
+            </div>
+            <div className="flex flex-col gap-8">
+              {links.map(link => (
+                <a key={link} href={`#${link.toLowerCase().replace(/\s+/g, '')}`} onClick={() => setMobileMenu(false)} className="text-4xl font-black text-white tracking-tighter">{link}</a>
+              ))}
+              <Button href="https://wa.me/5511965390284" className="w-full mt-10 text-xl py-6">Agendar Diagnóstico</Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </nav>
+  );
+};
+
+const Hero = () => (
+  <section className="relative pt-44 pb-20 lg:pt-60 lg:pb-40 overflow-hidden">
+    {/* Mesh Gradients */}
+    <div className="absolute top-0 right-0 w-[60%] h-full bg-[radial-gradient(circle_at_50%_20%,rgba(37,99,235,0.15),transparent_50%)] pointer-events-none" />
+    <div className="absolute bottom-0 left-0 w-[40%] h-full bg-[radial-gradient(circle_at_20%_80%,rgba(59,130,246,0.1),transparent_50%)] pointer-events-none" />
+    
+    <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
+      <motion.div
+        initial={{ opacity: 0, x: -30 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.8 }}
+        className="text-center lg:text-left z-10"
+      >
+        <div className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 text-blue-400 px-5 py-2 rounded-full text-[10px] font-black mb-8 uppercase tracking-[0.3em]">
+          <Award size={14} className="fill-current"/> +100 Clientes Atendidos
+        </div>
+        
+        <h1 className="text-6xl lg:text-9xl font-black mb-8 leading-[0.9] tracking-tighter text-white">
+          Marketing <br /><span className="text-blue-600 italic">Especializado.</span>
+        </h1>
+        
+        <p className="text-lg md:text-xl text-slate-400 mb-12 max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium">
+          A Supprime é uma empresa de marketing que através do método <span className="text-white font-bold tracking-tight">L.A.J.</span> ajuda empresas de <span className="text-white font-bold">moda e wellness</span> a multiplicarem o seu tamanho.
+        </p>
+        
+        <div className="flex flex-col sm:flex-row gap-5 justify-center lg:justify-start mb-16">
+          <Button variant="primary" href="https://wa.me/5511965390284" className="text-lg">
+            Agendar Diagnóstico <ArrowRight size={20}/>
+          </Button>
+        </div>
+
+        <div className="flex items-center justify-center lg:justify-start gap-4 text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em]">
+          <div className="flex -space-x-3">
+            {[1,2,3].map(i => (
+              <img key={i} src={`https://i.pravatar.cc/100?u=${i}`} className="w-10 h-10 rounded-full border-2 border-[#05070a]" alt="Avatar de Cliente" />
+            ))}
+          </div>
+          <span>Mais de 100 empresas em escala</span>
+        </div>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 1.2 }}
+        className="relative hidden lg:block"
+      >
+        <div className="absolute -inset-10 bg-blue-600/10 blur-[100px] rounded-full animate-pulse" />
+        <div className="relative bg-gradient-to-br from-white/5 to-transparent p-4 rounded-[4rem] border border-white/10 shadow-2xl">
+          <img 
+            src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=1200" 
+            alt="Growth Dashboard da Supprime" 
+            className="rounded-[3.2rem] grayscale-[0.2] hover:grayscale-0 transition-all duration-700"
+          />
+          {/* Métrica flutuante animada */}
+          <motion.div 
+            animate={{ y: [0, -20, 0] }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute -bottom-8 -left-8 bg-[#0a0f18]/95 backdrop-blur-xl p-8 rounded-3xl border border-white/10 shadow-3xl"
+          >
+            <div className="flex items-center gap-5">
+              <div className="bg-blue-600/20 p-4 rounded-2xl text-blue-500"><TrendingUp size={32} /></div>
+              <div>
+                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Crescimento Médio</div>
+                <div className="text-4xl font-black text-white">+315%</div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </motion.div>
+    </div>
+  </section>
+);
+
+const Logos = () => (
+  <section className="py-20 bg-black/40 border-y border-white/5 overflow-hidden">
+    <div className="max-w-7xl mx-auto px-6">
+      <div className="flex flex-wrap justify-center items-center gap-12 md:gap-32 opacity-20 hover:opacity-50 transition-all duration-1000 grayscale hover:grayscale-0">
+        <span className="text-3xl font-black tracking-tighter text-white">BRAAVO</span>
+        <span className="text-3xl font-black tracking-tighter text-white">MAGAZORD</span>
+        <span className="text-3xl font-black tracking-tighter text-white">NEXUS</span>
+        <span className="text-3xl font-black tracking-tighter text-white">HORIZON</span>
+      </div>
+    </div>
+  </section>
+);
+
+const Features = () => {
+  const secondaryCards = [
+    { title: 'SEO', icon: <Search />, desc: 'Domine o topo orgânico e reduza o seu custo de aquisição.' },
+    { title: 'Social Media', icon: <Share2 />, desc: 'Posicionamento e gestão de comunidade para marcas premium.' },
+    { title: 'Automações', icon: <Zap />, desc: 'Escalabilidade com processos de vendas que rodam 24/7.' },
+    { title: 'Planeamento Estratégico', icon: <Layout />, desc: 'O roadmap de 12 meses para dominar o seu mercado.' },
+  ];
+
+  return (
+    <section id="features" className="py-32 lg:py-48 bg-[#05070a]">
+      <div className="max-w-7xl mx-auto px-6">
+        <SectionTitle title="Ecossistema de Performance." subtitle="Features" />
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="lg:col-span-4 bg-gradient-to-br from-blue-900/20 to-transparent rounded-[4rem] p-10 lg:p-20 border border-white/5 flex flex-col lg:flex-row items-center gap-16 group hover:border-blue-500/30 transition-all">
+            <div className="lg:w-1/2">
+              <div className="w-20 h-20 bg-blue-600 rounded-[2rem] flex items-center justify-center mb-10 shadow-[0_0_40px_rgba(37,99,235,0.4)] transition-transform group-hover:rotate-12">
+                <BarChart3 size={40} className="text-white"/>
+              </div>
+              <h3 className="text-4xl lg:text-6xl font-black mb-8 text-white">Mídia Paga</h3>
+              <p className="text-slate-400 text-xl leading-relaxed mb-12">
+                Gestão agressiva em Google Ads e Meta Ads focada 100% no seu ROI. Não vendemos cliques, vendemos margem líquida para Moda & Wellness.
+              </p>
+              <Button variant="primary" href="https://wa.me/5511965390284" className="w-fit text-lg">Ver Estratégias</Button>
+            </div>
+            <div className="lg:w-1/2 w-full aspect-video bg-black/50 rounded-[3rem] border border-white/5 relative flex items-center justify-center overflow-hidden text-white font-black text-[120px] opacity-[0.03]">
+               ROI
+            </div>
+          </div>
+
+          {secondaryCards.map((card, i) => (
+            <motion.div
+              key={card.title}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+              className="bg-white/[0.02] p-12 rounded-[3rem] border border-white/5 hover:border-blue-500/20 hover:bg-white/[0.04] transition-all group"
+            >
+              <div className="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center mb-10 border border-white/5 group-hover:bg-blue-600/20 transition-colors">
+                <span className="text-blue-500">{card.icon}</span>
+              </div>
+              <h4 className="text-2xl font-black text-white mb-4 tracking-tight">{card.title}</h4>
+              <p className="text-slate-500 leading-relaxed font-medium text-left">{card.desc}</p>
+            </motion.div>
+          ))}
+        </div>
+      </div>
     </section>
+  );
+};
 
-    <!-- Credibilidade -->
-    <section class="py-20 bg-black/40 border-y border-white/5 overflow-hidden">
-        <div class="max-w-7xl mx-auto px-6 text-center">
-            <p class="text-slate-500 font-bold uppercase text-[9px] tracking-[0.5em] mb-12">Confiam na nossa metodologia</p>
-            <div class="flex flex-wrap justify-center items-center gap-12 lg:gap-32 opacity-30 grayscale hover:grayscale-0 transition-all duration-700">
-                <span class="text-3xl font-black tracking-tighter">BRAAVO</span>
-                <span class="text-3xl font-black tracking-tighter">MAGAZORD</span>
-                <span class="text-3xl font-black tracking-tighter">NEXUS</span>
-                <span class="text-3xl font-black tracking-tighter">HORIZON</span>
-            </div>
+const WhyChoose = () => (
+  <section id="whychoose" className="py-32 bg-white/[0.02] border-y border-white/5">
+    <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-24 items-center">
+      <div className="relative hidden lg:block">
+        <div className="absolute -inset-20 bg-blue-600/5 blur-[120px] rounded-full" />
+        <img 
+          src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=1000" 
+          className="relative rounded-[4rem] grayscale hover:grayscale-0 transition-all duration-1000 shadow-3xl border border-white/5" 
+          alt="Equipa Supprime"
+        />
+        <div className="absolute -bottom-10 -right-10 w-52 h-52 bg-blue-600 rounded-full flex flex-col items-center justify-center text-white p-8 text-center rotate-6 shadow-2xl border-8 border-[#05070a]">
+          <span className="text-5xl font-black tracking-tighter">100%</span>
+          <span className="text-[10px] font-bold uppercase tracking-widest mt-1 opacity-80">Data-Driven</span>
         </div>
-    </section>
-
-    <!-- Features -->
-    <section id="servicos" class="py-32 lg:py-48 bg-[#05070a]">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="reveal text-center lg:text-left mb-24">
-                <p class="text-blue-500 font-black uppercase text-xs tracking-[0.4em] mb-4">Features</p>
-                <h2 class="text-5xl lg:text-7xl font-black tracking-tighter">Nosso Ecossistema de <span class="text-blue-600">Performance.</span></h2>
+      </div>
+      <div>
+        <SectionTitle title="Expertise que gera lucro." subtitle="Why Choose Us" align="left" />
+        <div className="space-y-16">
+          <div className="flex gap-8 group">
+            <div className="flex-shrink-0 w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 group-hover:bg-blue-600 transition-colors duration-500">
+              <Users className="text-blue-500 group-hover:text-white" size={32}/>
             </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Mídia Paga Full Width -->
-                <div class="lg:col-span-3 reveal card-tech rounded-[3.5rem] p-10 lg:p-20 flex flex-col lg:flex-row items-center gap-16 relative overflow-hidden group">
-                    <div class="lg:w-1/2">
-                        <div class="w-20 h-20 bg-blue-600 rounded-[2rem] flex items-center justify-center mb-10 shadow-[0_0_40px_rgba(37,99,235,0.4)] transition-transform group-hover:rotate-12"><i data-lucide="bar-chart-3" class="w-10 h-10"></i></div>
-                        <h3 class="text-4xl lg:text-6xl font-black mb-8">Mídia Paga</h3>
-                        <p class="text-slate-400 text-xl leading-relaxed mb-12">Gestão agressiva em Google e Meta Ads focada 100% no seu ROI. Escala previsível para e-commerces de moda e wellness.</p>
-                        <a href="#" class="inline-flex items-center gap-4 text-blue-500 font-black text-xl group-hover:gap-6 transition-all">Começar Escala <i data-lucide="arrow-right"></i></a>
-                    </div>
-                    <div class="lg:w-1/2 w-full aspect-video bg-black/50 rounded-[2.5rem] border border-white/5 relative flex items-center justify-center overflow-hidden">
-                        <div class="text-[120px] font-black opacity-[0.03] absolute select-none">PERF</div>
-                        <div class="w-4/5 h-2 bg-white/5 rounded-full relative">
-                            <div class="absolute h-full bg-blue-600 w-3/4 shadow-[0_0_20px_rgba(37,99,235,1)]"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Grid secundária -->
-                <div class="reveal card-tech p-12 rounded-[3rem]">
-                    <div class="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center mb-10 border border-white/5"><i data-lucide="search" class="text-blue-400 w-8 h-8"></i></div>
-                    <h4 class="text-2xl font-black mb-4">SEO</h4>
-                    <p class="text-slate-500 leading-relaxed font-medium">Domine o topo do Google organicamente com foco em termos de alta conversão.</p>
-                </div>
-                <div class="reveal card-tech p-12 rounded-[3rem]">
-                    <div class="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center mb-10 border border-white/5"><i data-lucide="share-2" class="text-blue-400 w-8 h-8"></i></div>
-                    <h4 class="text-2xl font-black mb-4">Social Media</h4>
-                    <p class="text-slate-500 leading-relaxed font-medium">Posicionamento estratégico para criar uma comunidade fiel e desejosa por seus produtos.</p>
-                </div>
-                <div class="reveal card-tech p-12 rounded-[3rem]">
-                    <div class="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center mb-10 border border-white/5"><i data-lucide="zap" class="text-blue-400 w-8 h-8"></i></div>
-                    <h4 class="text-2xl font-black mb-4">Automações</h4>
-                    <p class="text-slate-500 leading-relaxed font-medium">Sistemas inteligentes que vendem por você 24/7, otimizando cada etapa do funil.</p>
-                </div>
-                <div class="reveal lg:col-span-3 card-tech p-12 rounded-[3rem] flex flex-col lg:flex-row justify-between items-center gap-10">
-                    <div class="max-w-xl">
-                        <h4 class="text-3xl font-black mb-4">Planejamento Estratégico</h4>
-                        <p class="text-slate-500 font-medium">O Método L.A.J aplicado na base: planejamento de 12 meses focado em previsibilidade de caixa e crescimento sustentável.</p>
-                    </div>
-                    <i data-lucide="layout" class="w-16 h-16 text-blue-600 opacity-20 hidden lg:block"></i>
-                </div>
+            <div className="text-left">
+              <h4 className="text-2xl font-black text-white mb-3 tracking-tight">Time Especializado no Seu Nicho</h4>
+              <p className="text-slate-500 text-lg leading-relaxed font-medium">Entendemos o comportamento de compra do consumidor de Moda e Wellness.</p>
             </div>
+          </div>
+          <div className="flex gap-8 group">
+            <div className="flex-shrink-0 w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 group-hover:bg-blue-600 transition-colors duration-500">
+              <ShieldCheck className="text-blue-500 group-hover:text-white" size={32}/>
+            </div>
+            <div className="text-left">
+              <h4 className="text-2xl font-black text-white mb-3 tracking-tight">+ de 3 Anos de Mercado</h4>
+              <p className="text-slate-500 text-lg leading-relaxed font-medium">Histórico sólido de operações transformadas pela performance agressiva.</p>
+            </div>
+          </div>
         </div>
-    </section>
+      </div>
+    </div>
+  </section>
+);
 
-    <!-- Why Us -->
-    <section id="metodo" class="py-32 bg-white/[0.02] border-y border-white/5">
-        <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-24 items-center">
-            <div class="reveal">
-                <p class="text-blue-500 font-black uppercase text-xs tracking-[0.4em] mb-6">Metodologia</p>
-                <h2 class="text-4xl lg:text-7xl font-black mb-12 tracking-tighter leading-tight">Expertise de nicho para <span class="text-blue-600">marcas de luxo.</span></h2>
-                <div class="space-y-12 text-left">
-                    <div class="flex gap-8 group">
-                        <div class="flex-shrink-0 w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 group-hover:bg-blue-600 transition-all duration-500"><i data-lucide="users" class="text-blue-500 group-hover:text-white"></i></div>
-                        <div>
-                            <h4 class="text-2xl font-black mb-2 tracking-tight">Time Especializado no Seu Nicho</h4>
-                            <p class="text-slate-500 font-medium">Entendemos as dores e o comportamento de compra dos clientes de moda e bem-estar.</p>
-                        </div>
-                    </div>
-                    <div class="flex gap-8 group">
-                        <div class="flex-shrink-0 w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 group-hover:bg-blue-600 transition-all duration-500"><i data-lucide="award" class="text-blue-500 group-hover:text-white"></i></div>
-                        <div>
-                            <h4 class="text-2xl font-black mb-2 tracking-tight">+ de 3 Anos de Mercado</h4>
-                            <p class="text-slate-500 font-medium">Metodologia validada em dezenas de operações de sucesso no Brasil e no mundo.</p>
-                        </div>
-                    </div>
-                </div>
+const Testimonials = () => (
+  <section id="testimonials" className="py-32 lg:py-48 bg-[#05070a]">
+    <div className="max-w-7xl mx-auto px-6">
+      <SectionTitle title="O que dizem os CEOs." subtitle="Testimonials" />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+        <motion.div whileHover={{ y: -10 }} className="bg-white/[0.03] p-12 lg:p-20 rounded-[4rem] border border-white/5 relative text-left">
+          <div className="flex gap-1 text-yellow-500 mb-10">
+            {[1,2,3,4,5].map(i => <Star key={i} size={20} className="fill-current" />)}
+          </div>
+          <p className="text-2xl lg:text-4xl font-medium italic text-slate-200 leading-snug mb-16">
+            "Triplicámos o faturamento em apenas 1 ano de parceria. A metodologia da Supprime é agressiva e impecável."
+          </p>
+          <div className="flex items-center gap-6">
+            <img src="https://i.pravatar.cc/150?u=lucca" className="w-20 h-20 rounded-full border-4 border-blue-600 shadow-2xl" alt="Lucca de Oliveira" />
+            <div>
+              <p className="text-2xl font-black text-white tracking-tight">Lucca de Oliveira</p>
+              <p className="text-blue-500 font-bold text-sm uppercase tracking-widest">CEO, Innova Retail</p>
             </div>
-            <div class="reveal relative hidden lg:block">
-                <div class="absolute -inset-10 bg-blue-600/5 blur-[80px] rounded-full"></div>
-                <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=1000" 
-                     class="relative rounded-[4rem] grayscale hover:grayscale-0 transition-all duration-1000 border border-white/5" alt="Time Supprime">
+          </div>
+        </motion.div>
+
+        <motion.div whileHover={{ y: -10 }} className="bg-white/[0.03] p-12 lg:p-20 rounded-[4rem] border border-white/5 relative text-left">
+          <div className="flex gap-1 text-yellow-500 mb-10">
+            {[1,2,3,4,5].map(i => <Star key={i} size={20} className="fill-current" />)}
+          </div>
+          <p className="text-2xl lg:text-4xl font-medium italic text-slate-200 leading-snug mb-16">
+            "O sucesso é ir de fracasso em fracasso sem perder entusiasmo até à hora em que encontras a Supprime."
+          </p>
+          <div className="flex items-center gap-6">
+            <img src="https://i.pravatar.cc/150?u=joao" className="w-20 h-20 rounded-full border-4 border-blue-600 shadow-2xl" alt="João Russini" />
+            <div>
+              <p className="text-2xl font-black text-white tracking-tight">João Russini</p>
+              <p className="text-blue-500 font-bold text-sm uppercase tracking-widest">Growth Lead</p>
             </div>
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  </section>
+);
+
+const FAQ = () => (
+  <section id="faq" className="py-32 bg-black/40">
+    <div className="max-w-3xl mx-auto px-6">
+      <h2 className="text-4xl lg:text-6xl font-black text-center mb-24 tracking-tighter text-white">Dúvidas Frequentes</h2>
+      <div className="bg-white/[0.02] p-8 md:p-12 rounded-[3rem] border border-white/5">
+        <FAQItem 
+          question="Como Funciona a Garantia?" 
+          answer="Trabalhamos com modelos de performance baseados em ROI. Embora o marketing digital não tenha garantia linear (pois dependemos de algoritmos de terceiros), trabalhamos com planos de acção agressivos validados por dados." 
+        />
+      </div>
+    </div>
+  </section>
+);
+
+const FinalCTA = () => (
+  <section className="py-32 pb-48 px-6">
+    <div className="max-w-7xl mx-auto bg-blue-600 rounded-[5rem] p-12 md:p-32 text-white flex flex-col md:flex-row items-center gap-20 relative overflow-hidden shadow-[0_50px_100px_-20px_rgba(37,99,235,0.4)]">
+      <div className="md:w-3/5 relative z-10 text-center md:text-left">
+        <h2 className="text-5xl md:text-9xl font-black mb-12 tracking-tighter leading-[0.85]">Escale a sua <br />marca hoje.</h2>
+        <div className="flex flex-col sm:flex-row gap-6 justify-center md:justify-start">
+          <Button href="https://wa.me/5511965390284" className="!bg-white !text-blue-600 hover:!bg-slate-50 border-none px-12 py-6 text-2xl shadow-2xl">
+            Agendar Diagnóstico Gratuito
+          </Button>
         </div>
-    </section>
+      </div>
+      <div className="md:w-2/5 relative">
+        <motion.div animate={{ y: [0, -20, 0] }} transition={{ duration: 6, repeat: Infinity }} className="bg-black/20 p-6 rounded-[3.5rem] border border-white/20">
+          <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=800" className="rounded-[2.5rem] opacity-90 shadow-2xl" alt="Mockup Dashboard" />
+        </motion.div>
+      </div>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_50%)] pointer-events-none" />
+    </div>
+  </section>
+);
 
-    <!-- Testemunhos -->
-    <section class="py-32 bg-[#05070a]">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="reveal text-center mb-24">
-                <p class="text-blue-500 font-black uppercase text-xs tracking-[0.4em] mb-4">Resultados</p>
-                <h2 class="text-4xl lg:text-6xl font-black tracking-tighter">O que dizem os <span class="text-blue-600">CEOs.</span></h2>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
-                <div class="reveal card-tech p-12 rounded-[3.5rem] relative">
-                    <div class="flex gap-1 text-yellow-500 mb-8"><i data-lucide="star" class="fill-current w-5 h-5"></i><i data-lucide="star" class="fill-current w-5 h-5"></i><i data-lucide="star" class="fill-current w-5 h-5"></i><i data-lucide="star" class="fill-current w-5 h-5"></i><i data-lucide="star" class="fill-current w-5 h-5"></i></div>
-                    <p class="text-2xl font-medium italic text-slate-200 leading-snug mb-12">"Triplicamos o faturamento em apenas 1 ano de parceria. A metodologia da Supprime é agressiva e impecável."</p>
-                    <div class="flex items-center gap-4">
-                        <img src="https://i.pravatar.cc/150?u=lucca" class="w-16 h-16 rounded-full border-2 border-blue-600">
-                        <div class="text-left">
-                            <p class="font-black text-white">Lucca de Oliveira</p>
-                            <p class="text-slate-500 text-xs font-bold uppercase tracking-widest">Innova Retail</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="reveal card-tech p-12 rounded-[3.5rem] relative">
-                    <div class="flex gap-1 text-yellow-500 mb-8"><i data-lucide="star" class="fill-current w-5 h-5"></i><i data-lucide="star" class="fill-current w-5 h-5"></i><i data-lucide="star" class="fill-current w-5 h-5"></i><i data-lucide="star" class="fill-current w-5 h-5"></i><i data-lucide="star" class="fill-current w-5 h-5"></i></div>
-                    <p class="text-2xl font-medium italic text-slate-200 leading-snug mb-12">"O sucesso é ir de fracasso em fracasso sem perder entusiasmo até a hora em que você encontra a Supprime."</p>
-                    <div class="flex items-center gap-4">
-                        <img src="https://i.pravatar.cc/150?u=joao" class="w-16 h-16 rounded-full border-2 border-blue-600">
-                        <div class="text-left">
-                            <p class="font-black text-white">João Russini</p>
-                            <p class="text-slate-500 text-xs font-bold uppercase tracking-widest">Growth Partners</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+const Footer = () => (
+  <footer className="bg-black py-20 border-t border-white/5 text-center">
+    <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-12 text-slate-500 text-xs font-bold uppercase tracking-widest">
+      <p>© 2025 Supprime | Performance First</p>
+      <div className="flex gap-10">
+        <a href="#" className="hover:text-white transition-colors">LinkedIn</a>
+        <a href="https://www.instagram.com/supprime.digital/" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors flex items-center gap-2">
+          <Instagram size={14} /> Instagram
+        </a>
+        <a href="#" className="hover:text-white transition-colors">Facebook</a>
+        <a href="#" className="hover:text-white transition-colors">Twitter</a>
+      </div>
+    </div>
+  </footer>
+);
 
-    <!-- FAQ -->
-    <section id="faq" class="py-32 bg-black/40">
-        <div class="max-w-3xl mx-auto px-6 text-left">
-            <h2 class="text-4xl font-black text-center mb-20 tracking-tighter">FAQ</h2>
-            <div class="faq-item card-tech p-8 rounded-3xl cursor-pointer" onclick="toggleFaq(this)">
-                <div class="flex justify-between items-center font-bold text-xl tracking-tight">
-                    <span>Como funciona a Garantia?</span>
-                    <i data-lucide="chevron-down" class="text-blue-500 transition-transform chevron-icon"></i>
-                </div>
-                <div class="faq-content text-slate-500 leading-relaxed font-medium">
-                    A Supprime trabalha com modelos de performance baseados em ROI. No marketing de performance direto, focamos em metas de retorno sobre investimento. Portanto, não oferecemos garantia de reembolso, mas sim comprometimento contratual com indicadores de sucesso.
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Final CTA -->
-    <section class="py-32 px-6">
-        <div class="max-w-7xl mx-auto bg-blue-600 rounded-[5rem] p-16 lg:p-32 text-white flex flex-col lg:flex-row items-center gap-20 relative overflow-hidden shadow-2xl shadow-blue-500/40">
-            <div class="reveal lg:w-3/5 relative z-10 text-center lg:text-left">
-                <h2 class="text-5xl lg:text-9xl font-black mb-12 tracking-tighter leading-[0.85]">Escale sua <br>marca hoje.</h2>
-                <a href="#" class="bg-white text-blue-600 px-14 py-7 rounded-full font-black text-2xl btn-tech shadow-2xl hover:scale-105 transition-all inline-block">Agendar Diagnóstico Agora</a>
-            </div>
-            <div class="reveal lg:w-2/5 relative animate-float">
-                <div class="bg-black/20 p-6 rounded-[3.5rem] border border-white/20">
-                    <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800" class="rounded-[2.5rem]" alt="Supprime Performance App">
-                </div>
-            </div>
-            <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white/20 to-transparent opacity-50 pointer-events-none"></div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer id="sobre" class="bg-black py-24 border-t border-white/5 text-center lg:text-left">
-        <div class="max-w-7xl mx-auto px-6 flex flex-col lg:flex-row justify-between items-center gap-16">
-            <div class="flex flex-col items-center lg:items-start">
-                <div class="flex items-center gap-4 mb-8">
-                    <div class="relative flex items-center justify-center bg-[#0d1117] p-2 rounded-xl">
-                        <svg width="30" height="30" viewBox="0 0 100 100" fill="none">
-                            <path d="M15 30L35 30L40 22H60L65 30L85 30L75 70L50 92L25 70L15 30Z" fill="#2563eb"/>
-                            <path d="M46 55L50 62L54 55H46Z" fill="white"/>
-                        </svg>
-                    </div>
-                    <div class="flex flex-col -ml-1">
-                        <span class="text-3xl brand-font text-white -mb-3">Supprime</span>
-                        <span class="text-[8px] font-bold tracking-[0.55em] uppercase text-white opacity-60 self-end">Digital</span>
-                    </div>
-                </div>
-                <p class="text-slate-600 max-w-xs text-sm font-medium leading-relaxed">Marketing de performance focado em resultados reais para nichos de moda e wellness.</p>
-            </div>
-            
-            <div class="flex flex-wrap justify-center gap-12 font-bold text-slate-500 uppercase text-[10px] tracking-[0.3em]">
-                <a href="#" class="hover:text-blue-500 transition-colors">Início</a>
-                <a href="https://www.instagram.com/supprime.digital/" target="_blank" class="flex items-center gap-2 hover:text-white transition-colors"><i data-lucide="instagram" class="w-4 h-4"></i> Instagram</a>
-            </div>
-
-            <p class="text-slate-700 text-[10px] font-black uppercase tracking-[0.2em]">Supprime © 2025 | Performance First</p>
-        </div>
-    </footer>
-
-    <script>
-        lucide.createIcons();
-
-        // Reveal Animations on Scroll
-        const observerOptions = { threshold: 0.1 };
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('active');
-                }
-            });
-        }, observerOptions);
-
-        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-
-        // Scroll Effects
-        window.onscroll = function() {
-            const nav = document.getElementById('navbar');
-            if (window.scrollY > 40) {
-                nav.classList.add('py-4');
-                nav.classList.remove('py-6');
-            } else {
-                nav.classList.add('py-6');
-                nav.classList.remove('py-4');
-            }
-        };
-
-        function toggleMenu() {
-            const overlay = document.getElementById('mobile-overlay');
-            overlay.classList.toggle('hidden');
-            document.body.style.overflow = overlay.classList.contains('hidden') ? 'auto' : 'hidden';
-        }
-
-        function toggleFaq(el) {
-            const allItems = document.querySelectorAll('.faq-item');
-            allItems.forEach(item => { if(item !== el) item.classList.remove('active'); });
-            el.classList.toggle('active');
-        }
-    </script>
-</body>
-</html>
+export default function App() {
+  return (
+    <div className="min-h-screen bg-[#05070a] selection:bg-blue-500/30 selection:text-white">
+      <GoogleFonts />
+      <Navbar />
+      <Hero />
+      <Logos />
+      <Features />
+      <WhyChoose />
+      <Testimonials />
+      <FAQ />
+      <FinalCTA />
+      <Footer />
+    </div>
+  );
+}
